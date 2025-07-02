@@ -1,0 +1,305 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <title>Recipe Viewer</title>
+  <style>
+    table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 8px; }
+    th { background-color: #f2f2f2; }
+    .drawer { display: none; padding: 10px; border: 1px solid #ddd; margin-top: 10px; }
+    .star { color: gold; }
+  </style>
+</head>
+<body>
+
+<h2>Recipe List</h2>
+
+
+<h3>Search Recipes</h3>
+<form id="searchForm">
+  Title: <input type="text" name="title" id="title">
+  Cuisine: <input type="text" name="cuisine" id="cuisine">
+  Min Rating: <input type="number" step="0.1" name="rating" id="rating">
+  Max Calories: <input type="number" name="calories" id="calories">
+  <button type="submit">Search</button>
+</form>
+
+<table id="recipeTable">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Cuisine</th>
+      <th>Rating</th>
+      <th>Total Time</th>
+      <th>Serves</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="drawer" class="drawer"></div>
+
+<script>
+    function handleSearch(e) {
+  e.preventDefault();
+  
+  const title = document.getElementById("title").value;
+  const rating = document.getElementById("rating").value;
+  const cuisine = document.getElementById("cuisine").value;
+  
+  const calories = document.getElementById("calories").value;
+
+  let url = `/api/search_recipes?`;
+  if (title) url += `title=${encodeURIComponent(title)}&`;
+  if (rating) url += `rating=${encodeURIComponent(rating)}&`;
+  if (cuisine) url += `cuisine=${encodeURIComponent(cuisine)}&`;
+  
+  if (calories) url += `calories=${encodeURIComponent(calories)}&`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.querySelector("#recipeTable tbody");
+      tbody.innerHTML = "";
+      data.data.forEach(r => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.title}</td>
+          
+          <td>${'★'.repeat(Math.floor(r.rating))}</td>
+          <td>${r.cuisine}</td>
+          <td>${r.total_time}</td>
+          <td>${r.serves}</td>
+        `;
+        row.addEventListener("click", () => showDrawer(r));
+        tbody.appendChild(row);
+      });
+
+      // Hide drawer if search is applied
+      document.getElementById("drawer").style.display = "none";
+    });
+}
+
+function fetchRecipes() {
+  fetch("/api/recipes?page=1&limit=10")
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.querySelector("#recipeTable tbody");
+      tbody.innerHTML = "";
+      data.data.forEach(r => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.title}</td>
+          <td>${r.cuisine}</td>
+          <td>${'★'.repeat(Math.floor(r.rating))}</td>
+          <td>${r.total_time}</td>
+          <td>${r.serves}</td>
+        `;
+        row.addEventListener("click", () => showDrawer(r));
+        tbody.appendChild(row);
+      });
+    });
+}
+function searchRecipes(params) {
+  const query = new URLSearchParams(params).toString();
+  fetch(`/api/search_recipes?${query}`)
+    .then(res => res.json())
+    .then(data => {
+      const tbody = document.querySelector("#recipeTable tbody");
+      tbody.innerHTML = "";
+      data.data.forEach(r => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.title}</td>
+          <td>${r.cuisine}</td>
+          <td>${'★'.repeat(Math.floor(r.rating))}</td>
+          <td>${r.total_time}</td>
+          <td>${r.serves}</td>
+        `;
+        row.addEventListener("click", () => showDrawer(r));
+        tbody.appendChild(row);
+      });
+    });
+}
+
+
+function showDrawer(r) {
+  const drawer = document.getElementById("drawer");
+  drawer.innerHTML = `
+    <h3>${r.title} - ${r.cuisine}</h3>
+    <p><strong>Description:</strong> ${r.description}</p>
+    <p><strong>Prep Time:</strong> ${r.prep_time}, <strong>Cook Time:</strong> ${r.cook_time}</p>
+    <h4>Nutrients</h4>
+    <ul>
+      <li>Calories: ${r.nutrients.calories}</li>
+      <li>Carbs: ${r.nutrients.carbohydrateContent}</li>
+      <li>Cholesterol: ${r.nutrients.cholesterolContent}</li>
+      <li>Fiber: ${r.nutrients.fiberContent}</li>
+      <li>Protein: ${r.nutrients.proteinContent}</li>
+      <li>Saturated Fat: ${r.nutrients.saturatedFatContent}</li>
+      <li>Sodium: ${r.nutrients.sodiumContent}</li>
+      <li>Sugar: ${r.nutrients.sugarContent}</li>
+      <li>Fat: ${r.nutrients.fatContent}</li>
+    </ul>
+  `;
+  drawer.style.display = "block";
+}
+document.getElementById("searchForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const params = {};
+  for (const [key, value] of formData.entries()) {
+    if (value.trim() !== "") {
+      params[key] = value;
+    }
+  }
+  searchRecipes(params);
+});
+
+
+fetchRecipes();
+</script>
+
+</body>
+</html> -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Recipe Viewer</title>
+  <style>
+    table, th, td {
+      border: 1px solid #ccc;
+      border-collapse: collapse;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .drawer {
+      display: none;
+      padding: 10px;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+    }
+    .star {
+      color: gold;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Recipe List</h2>
+
+<!-- ✅ SEARCH FORM -->
+<h3>Search Recipes</h3>
+<form id="searchForm">
+  Title: <input type="text" name="title" id="title">
+  Cuisine: <input type="text" name="cuisine" id="cuisine">
+  Min Rating: <input type="number" step="0.1" name="rating" id="rating">
+  Max Calories: <input type="number" name="calories" id="calories">
+  <button type="submit">Search</button>
+  <button type="button" onclick="resetSearch()">Reset</button>
+</form>
+
+<!-- ✅ RECIPE TABLE -->
+<table id="recipeTable">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Cuisine</th>
+      <th>Rating</th>
+      <th>Total Time</th>
+      <th>Serves</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- ✅ DRAWER FOR DETAILS -->
+<div id="drawer" class="drawer"></div>
+
+<script>
+  // Fetch default recipes initially
+  function fetchRecipes() {
+    fetch("/api/recipes?page=1&limit=10")
+      .then(res => res.json())
+      .then(data => renderRecipes(data.data));
+  }
+
+  // Search recipes from API
+  function searchRecipes(params) {
+    const query = new URLSearchParams(params).toString();
+    fetch(`/api/search_recipes?${query}`)
+      .then(res => res.json())
+      .then(data => renderRecipes(data.data));
+  }
+
+  // Render recipes into table
+  function renderRecipes(recipes) {
+    const tbody = document.querySelector("#recipeTable tbody");
+    tbody.innerHTML = "";
+    recipes.forEach(r => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${r.title}</td>
+        <td>${r.cuisine}</td>
+        <td>${'★'.repeat(Math.floor(r.rating))}</td>
+        <td>${r.total_time}</td>
+        <td>${r.serves}</td>
+      `;
+      row.addEventListener("click", () => showDrawer(r));
+      tbody.appendChild(row);
+    });
+    document.getElementById("drawer").style.display = "none";
+  }
+
+  // Show details in drawer
+  function showDrawer(r) {
+    const drawer = document.getElementById("drawer");
+    drawer.innerHTML = `
+      <h3>${r.title} - ${r.cuisine}</h3>
+      <p><strong>Description:</strong> ${r.description}</p>
+      <p><strong>Prep Time:</strong> ${r.prep_time}, <strong>Cook Time:</strong> ${r.cook_time}</p>
+      <h4>Nutrients</h4>
+      <ul>
+        <li>Calories: ${r.nutrients.calories}</li>
+        <li>Carbs: ${r.nutrients.carbohydrateContent}</li>
+        <li>Cholesterol: ${r.nutrients.cholesterolContent}</li>
+        <li>Fiber: ${r.nutrients.fiberContent}</li>
+        <li>Protein: ${r.nutrients.proteinContent}</li>
+        <li>Saturated Fat: ${r.nutrients.saturatedFatContent}</li>
+        <li>Sodium: ${r.nutrients.sodiumContent}</li>
+        <li>Sugar: ${r.nutrients.sugarContent}</li>
+        <li>Fat: ${r.nutrients.fatContent}</li>
+      </ul>
+    `;
+    drawer.style.display = "block";
+  }
+
+  // On form submit, collect input and search
+  document.getElementById("searchForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const params = {};
+    for (const [key, value] of formData.entries()) {
+      if (value.trim() !== "") {
+        params[key] = value;
+      }
+    }
+    searchRecipes(params);
+  });
+
+  // Reset search form and show default results
+  function resetSearch() {
+    document.getElementById("searchForm").reset();
+    fetchRecipes();
+  }
+
+  // Load default recipes initially
+  fetchRecipes();
+</script>
+
+</body>
+</html>
